@@ -9,6 +9,8 @@
 // write everything to analysis_results.toml
 // publish
 
+use serde_json;
+use std::fs;
 use std::io::{self, Write};
 use std::process::Command;
 
@@ -19,6 +21,19 @@ struct AnalyzerOpts {
     CodePath: String,
     ResultPath: String,
 }
+
+// struct Report {
+//     reason :String,
+//     code :{
+//         code: String,
+//     },
+//     level : String,
+//     message: String,
+//     spans: [
+//      line_end: i32,
+//      line_start: i32
+//     ]
+// }
 
 fn main() {
     // instantiating analyzer opts
@@ -66,9 +81,17 @@ fn main() {
         ])
         .current_dir(&analyzer_opts.CodePath)
         .output()
-        .expect("ls command failed to start");
+        .expect("clippy failed to work");
 
-    println!("status: {}", output.status);
     io::stdout().write_all(&output.stdout).unwrap();
+    println!("{}", String::from_utf8_lossy(&output.stdout));
+    let my_json: Vec<serde_json::Value> = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    fs::write("foo.txt", my_json).unwrap();
+    // let my_json: Value = serde_json(String::from_utf8_lossy(&output.stdout)).unwrap()
+
+    // println!("{}", my_json);
     io::stderr().write_all(&output.stderr).unwrap();
 }
