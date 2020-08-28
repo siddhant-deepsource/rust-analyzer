@@ -21,6 +21,7 @@ struct AnalyzerOpts {
 }
 
 fn main() {
+    // instantiating analyzer opts
     let analyzer_opts = AnalyzerOpts {
         Name: String::from("javascript"),
         AnalysisConfigPath: String::from("/toolbox/analysis_config.json"),
@@ -29,6 +30,7 @@ fn main() {
         ResultPath: String::from("/toolbox/analysis_results.json0"),
     };
 
+    // rustup update
     let output = Command::new("rustup")
         .args(&["update"])
         .current_dir(&analyzer_opts.CodePath)
@@ -41,6 +43,7 @@ fn main() {
 
     assert!(output.status.success());
 
+    // installing clippy
     let output = Command::new("rustup")
         .args(&["component", "add", "clippy"])
         .current_dir(&analyzer_opts.CodePath)
@@ -51,8 +54,16 @@ fn main() {
     io::stdout().write_all(&output.stdout).unwrap();
     io::stderr().write_all(&output.stderr).unwrap();
 
+    // running clippy and getting data in json format
     let output = Command::new("cargo")
-        .args(&["clippy", "--", "-W", "clippy::all"])
+        .args(&[
+            "clippy",
+            "--message-format",
+            "json",
+            "--",
+            "-W",
+            "clippy::all",
+        ])
         .current_dir(&analyzer_opts.CodePath)
         .output()
         .expect("ls command failed to start");
