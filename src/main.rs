@@ -3,7 +3,7 @@
 // run clippy there [DONE]
 // get the output in a file [DONE]
 // serialize that to json [DONE]
-// write it to analysis_results.json
+// write it to results.json file [DONE]
 // calculate doc coverage https://crates.io/crates/cargo-doc-coverage
 // count no. of deps by reading Cargo.toml? or any other way
 // write everything to analysis_results.toml
