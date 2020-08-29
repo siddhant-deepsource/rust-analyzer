@@ -37,10 +37,16 @@ struct Message {
 
 struct Code {
     code: String,
-    level : String,
+    level: String,
     message: String,
-    spans: 
+    spans: Vec<Span>,
 }
+
+struct Span {
+    line_start: i32,
+    line_end: i32,
+}
+
 fn main() {
     // instantiating analyzer opts
     let analyzer_opts = AnalyzerOpts {
