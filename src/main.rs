@@ -19,6 +19,7 @@ use std::path::Path;
 use std::process::Command;
 use toml::Value;
 
+// analyzer options
 struct AnalyzerOpts {
     Name: String,
     AnalysisConfigPath: String,
@@ -27,6 +28,7 @@ struct AnalyzerOpts {
     ResultPath: String,
 }
 
+// structs to receive the analyzed data
 #[derive(Serialize, Deserialize)]
 struct Report {
     reason: String,
@@ -109,11 +111,14 @@ fn main() {
     // write the output to a file
     let mut buffer = File::create("foo.txt").unwrap();
     buffer.write_all(&output.stdout);
-    // read by line
+    // reading the clippy out line by line
     let mut v = Vec::new();
+    // counting lines to prevent parsing the last 3 objects (they are useless)
     let lines_count: usize = count_lines(std::fs::File::open("foo.txt").unwrap()).unwrap();
     let mut count: usize = 0;
 
+    // iterating throughout the file of clippy data and finding the useful stuff
+    // and dumping into the analyzer object
     if let Ok(lines) = read_lines("./foo.txt") {
         for line in lines {
             count = count + 1;
@@ -135,10 +140,12 @@ fn main() {
         }
     }
 
+    // just a check
     for i in &v {
         println!("{}", i.message.spans[0].line_end);
     }
 
+    // DEPENDENCY CALCULATION
     // command - cargo tree --prefix depth | grep -c '^[[:space:]]*1' | wc -l
     // count direct dependencies
     let output = Command::new("cargo")
