@@ -14,10 +14,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::Result;
 use std::fs::File;
 use std::fs::OpenOptions;
-use std::io::prelude::*;
-use std::io::{self, BufRead, Write};
+use std::io;
+use std::io::prelude::Read;
+use std::io::{BufRead, Write};
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Stdio};
 use toml::Value;
 
 // analyzer options
@@ -142,21 +143,41 @@ fn main() {
     }
 
     let mut buffer = File::create("results.json").unwrap();
-    let mut out = serde_json::to_string_pretty(&v).unwrap();
-    buffer
-        .write_all(&out.as_bytes())
-        .expect("Writing the analysis result failed");
+    let mut result_output = serde_json::to_string_pretty(&v).unwrap();
 
-    // write the output to a file
+    // writing the output to a file
+    buffer
+        .write_all(&result_output.as_bytes())
+        .expect("Writing the analysis result failed");
 
     // DEPENDENCY CALCULATION
     // command - cargo tree --prefix depth | grep -c '^[[:space:]]*1' | wc -l
-    // count direct dependencies
-    // let output = Command::new("cargo")
-    //     .args(&["tree", "--prefix", "depth", "--", "-W", "clippy::all"])
-    //     .current_dir(&analyzer_opts.CodePath)
-    //     .output()
-    //     .expect("clippy failed to work");
+    // counting direct dependencies
+    let mut deps_index = Command::new("cargo")
+        .args(&["tree", "--prefix", "depth"])
+        .current_dir(&analyzer_opts.CodePath)
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("Failed to run cargo command to calc direct deps");
+
+    // we won't need deps_index anymore.
+    let deps_index_output = deps_index.stdout.expect("Failed to run cargo command");
+
+    let direct_deps = Command::new("grep")
+        .args(&["-c", "^[[:space:]]*1"])
+        .stdin(Stdio::from(deps_index_output))
+        .stdout(Stdio::piped())
+        .current_dir(&analyzer_opts.CodePath)
+        .spawn()
+        .expect("grepping failed to work");
+
+    let mut direct_deps_output = direct_deps.stdout.expect("Failed again");
+    let mut direct_deps_op = String::new();
+    direct_deps_output
+        .read_to_string(&mut direct_deps_op)
+        .unwrap();
+    println!("***********");
+    println!("Number of direct deps = {}", &direct_deps_op);
 }
 
 // The output is wrapped in a Result to allow matching on errors
