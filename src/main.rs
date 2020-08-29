@@ -171,12 +171,26 @@ fn main() {
         .spawn()
         .expect("grepping failed to work");
 
+    // let total_deps = Command::new("wc")
+    //     .args(&["-l"])
+    //     .stdin(Stdio::from(deps_index_output))
+    //     .stdout(Stdio::piped())
+    //     .current_dir(&analyzer_opts.CodePath)
+    //     .spawn()
+    //     .expect("grepping failed to work");
+
     let mut direct_deps_output = direct_deps.stdout.expect("Failed again");
+    // let mut total_deps_output = total_deps.stdout.expect("Total deps stdout failed.");
     let mut direct_deps_op = String::new();
+    // let mut total_deps_op = String::new();
     direct_deps_output
         .read_to_string(&mut direct_deps_op)
         .unwrap();
+    // total_deps_output
+    //     .read_to_string(&mut total_deps_op)
+    //     .unwrap();
     println!("***********");
+    // println!("Total dependencies = {}", &total_deps_op);
     println!("Number of direct deps = {}", &direct_deps_op);
 }
 
