@@ -142,16 +142,10 @@ fn main() {
     }
 
     let mut buffer = File::create("results.json").unwrap();
-
-    let mut out;
-    // just a check
-    for i in &v {
-        out = serde_json::to_string_pretty(&i).unwrap();
-        println!("{}", out);
-        buffer
-            .write_all(&out.as_bytes())
-            .expect("Writing the analysis result failed");
-    }
+    let mut out = serde_json::to_string_pretty(&v).unwrap();
+    buffer
+        .write_all(&out.as_bytes())
+        .expect("Writing the analysis result failed");
 
     // write the output to a file
 
