@@ -9,9 +9,12 @@
 // write everything to analysis_results.toml
 // publish
 
-use serde_json;
-use std::fs;
-use std::io::{self, Write};
+use serde::{Deserialize, Serialize};
+use serde_json::Result;
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::{self, BufRead, Write};
+use std::path::Path;
 use std::process::Command;
 
 struct AnalyzerOpts {
@@ -22,19 +25,22 @@ struct AnalyzerOpts {
     ResultPath: String,
 }
 
-// struct Report {
-//     reason :String,
-//     code :{
-//         code: String,
-//     },
-//     level : String,
-//     message: String,
-//     spans: [
-//      line_end: i32,
-//      line_start: i32
-//     ]
-// }
+#[derive(Serialize, Deserialize)]
+struct Report {
+    reason: String,
+    message: Message,
+}
 
+struct Message {
+    code: Code,
+}
+
+struct Code {
+    code: String,
+    level : String,
+    message: String,
+    spans: 
+}
 fn main() {
     // instantiating analyzer opts
     let analyzer_opts = AnalyzerOpts {
@@ -83,15 +89,42 @@ fn main() {
         .output()
         .expect("clippy failed to work");
 
-    io::stdout().write_all(&output.stdout).unwrap();
-    println!("{}", String::from_utf8_lossy(&output.stdout));
-    let my_json: Vec<serde_json::Value> = String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .map(|line| serde_json::from_str(line).unwrap())
-        .collect();
-    fs::write("foo.txt", my_json).unwrap();
-    // let my_json: Value = serde_json(String::from_utf8_lossy(&output.stdout)).unwrap()
-
-    // println!("{}", my_json);
+    // io::stdout().write_all(&output.stdout).unwrap();
     io::stderr().write_all(&output.stderr).unwrap();
+
+    // println!("{}", String::from_utf8_lossy(&output.stdout));
+    // write the output to a file
+    let mut buffer = File::create("foo.txt").unwrap();
+    buffer.write_all(&output.stdout);
+    // read by line
+    let mut v = Vec::new();
+
+    if let Ok(lines) = read_lines("./foo.txt") {
+        for line in lines {
+            if let Ok(ip) = line {
+                // println!("{}", ip);
+                let _res: Report = serde_json::from_str(&ip).unwrap();
+                println!("{} hello", _res.reason);
+                if (_res.reason == "compiler-message") {
+                    v.push(_res)
+                }
+            }
+        }
+    }
+
+    for i in &v {
+        println!("{}", i.reason);
+    }
+
+    // and make an array of objects
+}
+
+// The output is wrapped in a Result to allow matching on errors
+// Returns an Iterator to the Reader of the lines of the file.
+fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+where
+    P: AsRef<Path>,
+{
+    let file = File::open(filename)?;
+    Ok(io::BufReader::new(file).lines())
 }
