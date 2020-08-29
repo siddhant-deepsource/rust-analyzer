@@ -13,6 +13,7 @@ use linecount::count_lines;
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::io::{self, BufRead, Write};
 use std::path::Path;
@@ -145,9 +146,11 @@ fn main() {
     let mut out;
     // just a check
     for i in &v {
-        out = serde_json::to_string(&i).unwrap();
+        out = serde_json::to_string_pretty(&i).unwrap();
         println!("{}", out);
-        buffer.write_all(&out.as_bytes());
+        buffer
+            .write_all(&out.as_bytes())
+            .expect("Writing the analysis result failed");
     }
 
     // write the output to a file
