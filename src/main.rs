@@ -140,19 +140,26 @@ fn main() {
         }
     }
 
+    let mut buffer = File::create("results.json").unwrap();
+
+    let mut out;
     // just a check
     for i in &v {
-        println!("{}", i.message.spans[0].line_end);
+        out = serde_json::to_string(&i).unwrap();
+        println!("{}", out);
+        buffer.write_all(&out.as_bytes());
     }
+
+    // write the output to a file
 
     // DEPENDENCY CALCULATION
     // command - cargo tree --prefix depth | grep -c '^[[:space:]]*1' | wc -l
     // count direct dependencies
-    let output = Command::new("cargo")
-        .args(&["tree", "--prefix", "depth", "--", "-W", "clippy::all"])
-        .current_dir(&analyzer_opts.CodePath)
-        .output()
-        .expect("clippy failed to work");
+    // let output = Command::new("cargo")
+    //     .args(&["tree", "--prefix", "depth", "--", "-W", "clippy::all"])
+    //     .current_dir(&analyzer_opts.CodePath)
+    //     .output()
+    //     .expect("clippy failed to work");
 }
 
 // The output is wrapped in a Result to allow matching on errors
