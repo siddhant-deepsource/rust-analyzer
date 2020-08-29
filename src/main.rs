@@ -1,9 +1,9 @@
-// go to /code
-// install all deps there
-// run clippy there
-// get the output in a file
-// serialize that to json
-// write it to analysis_results.toml
+// go to /code [DONE]
+// install all deps there [DONE]
+// run clippy there [DONE]
+// get the output in a file [DONE]
+// serialize that to json [DONE]
+// write it to analysis_results.json
 // calculate doc coverage https://crates.io/crates/cargo-doc-coverage
 // count no. of deps by reading Cargo.toml? or any other way
 // write everything to analysis_results.toml
