@@ -17,6 +17,7 @@ use std::io::prelude::*;
 use std::io::{self, BufRead, Write};
 use std::path::Path;
 use std::process::Command;
+use toml::Value;
 
 struct AnalyzerOpts {
     Name: String,
@@ -50,6 +51,9 @@ struct Span {
     line_start: i32,
     line_end: i32,
 }
+
+#[derive(Deserialize)]
+struct Dependencies {}
 
 fn main() {
     // instantiating analyzer opts
@@ -123,6 +127,7 @@ fn main() {
                     let _res: Report = serde_json::from_str(&ip).unwrap();
                     // println!("{} hello", _res.message.code.code);
                     if _res.reason == "compiler-message" {
+                        // and make an array of objects
                         v.push(_res)
                     }
                 }
@@ -134,7 +139,13 @@ fn main() {
         println!("{}", i.message.spans[0].line_end);
     }
 
-    // and make an array of objects
+    // command - cargo tree --prefix depth | grep -c '^[[:space:]]*1' | wc -l
+    // count direct dependencies
+    let output = Command::new("cargo")
+        .args(&["tree", "--prefix", "depth", "--", "-W", "clippy::all"])
+        .current_dir(&analyzer_opts.CodePath)
+        .output()
+        .expect("clippy failed to work");
 }
 
 // The output is wrapped in a Result to allow matching on errors
