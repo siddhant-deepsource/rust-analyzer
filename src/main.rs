@@ -9,6 +9,7 @@
 // write everything to analysis_results.toml
 // publish
 
+use linecount::count_lines;
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 use std::fs::File;
@@ -31,17 +32,20 @@ struct Report {
     message: Message,
 }
 
+#[derive(Serialize, Deserialize)]
 struct Message {
     code: Code,
-}
-
-struct Code {
-    code: String,
     level: String,
     message: String,
     spans: Vec<Span>,
 }
 
+#[derive(Serialize, Deserialize)]
+struct Code {
+    code: String,
+}
+
+#[derive(Serialize, Deserialize)]
 struct Span {
     line_start: i32,
     line_end: i32,
@@ -98,28 +102,36 @@ fn main() {
     // io::stdout().write_all(&output.stdout).unwrap();
     io::stderr().write_all(&output.stderr).unwrap();
 
-    // println!("{}", String::from_utf8_lossy(&output.stdout));
     // write the output to a file
     let mut buffer = File::create("foo.txt").unwrap();
     buffer.write_all(&output.stdout);
     // read by line
     let mut v = Vec::new();
+    let lines_count: usize = count_lines(std::fs::File::open("foo.txt").unwrap()).unwrap();
+    let mut count: usize = 0;
 
     if let Ok(lines) = read_lines("./foo.txt") {
         for line in lines {
+            count = count + 1;
+            if count == lines_count - 3 {
+                break;
+            }
+
             if let Ok(ip) = line {
                 // println!("{}", ip);
-                let _res: Report = serde_json::from_str(&ip).unwrap();
-                println!("{} hello", _res.reason);
-                if (_res.reason == "compiler-message") {
-                    v.push(_res)
+                if ip.starts_with("{\"reason\":\"compiler-message\"") {
+                    let _res: Report = serde_json::from_str(&ip).unwrap();
+                    // println!("{} hello", _res.message.code.code);
+                    if _res.reason == "compiler-message" {
+                        v.push(_res)
+                    }
                 }
             }
         }
     }
 
     for i in &v {
-        println!("{}", i.reason);
+        println!("{}", i.message.spans[0].line_end);
     }
 
     // and make an array of objects
