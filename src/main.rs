@@ -66,7 +66,7 @@ fn main() {
         AnalysisConfigPath: String::from("/toolbox/analysis_config.json"),
         FileFinderRegex: String::from("\\.rs$"),
         CodePath: String::from("/Users/sidntrivedi012/Code/cap"),
-        ResultPath: String::from("/toolbox/analysis_results.json0"),
+        ResultPath: String::from("/toolbox/analysis_results.json"),
     };
 
     // rustup update
